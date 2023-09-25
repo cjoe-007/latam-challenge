@@ -2,6 +2,7 @@ import fastapi
 import pandas as pd
 from fastapi import HTTPException
 from typing import List
+from flightPredictionInput import FlightPredictionInput
 
 # Importar la clase DelayModel que definimos previamente
 from model import DelayModel
@@ -40,20 +41,20 @@ async def post_train() -> dict:
 
 # Ruta para realizar predicciones de retraso de vuelo
 @app.post("/predict", status_code=200)
-async def post_predict(features: List[dict]) -> dict:
+async def post_predict(feature: FlightPredictionInput) -> dict:
     try:
         # Crear un DataFrame a partir de los datos de entrada
-        input_data = pd.DataFrame(features)
+        input_data = pd.DataFrame([feature.dict()])  # Usamos .dict() para convertir el modelo en un diccionario
 
         # Preprocesar los datos
         preprocessed_data = model.preprocess(input_data)
 
-        # Realizar predicciones
-        predictions = model.predict(preprocessed_data)
+        # Realizar predicción
+        prediction = model.predict(preprocessed_data)
 
-        # Devolver las predicciones como respuesta
+        # Devolver la predicción como respuesta
         return {
-            "predictions": predictions.tolist()
+            "prediction": prediction[0]  # Devuelve la predicción única
         }
     except Exception as e:
         # Manejar cualquier error y devolver una respuesta de error
